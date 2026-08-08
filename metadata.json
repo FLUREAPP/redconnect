@@ -1,0 +1,6 @@
+{
+  "name": "RedConnect",
+  "description": "Real-time random video chat application.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
