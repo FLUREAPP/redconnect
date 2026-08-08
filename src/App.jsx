@@ -44,6 +44,17 @@ function App() {
   const [myGender, setMyGender] = useState('male');
   const [lookingFor, setLookingFor] = useState('anyone');
 
+  // Fungsi saat tombol "Mulai Obrolan Baru" diklik
+  const handleStartChat = () => {
+    alert(`Memulai pencarian... Preferensi: ${myGender} mencari ${lookingFor}`);
+    // Di sini nanti bisa diarahkan ke fungsi pencarian atau halaman chat
+  };
+
+  // Fungsi saat tombol "Masuk / Daftar Akun" diklik
+  const handleAuthClick = () => {
+    alert('Fitur Masuk / Daftar Akun akan segera dibuka!');
+  };
+
   return (
     <>
       <aside className="sidebar">
@@ -63,7 +74,9 @@ function App() {
 
       <main className="main-wrapper">
         <div className="header-top">
-          <span style={{ cursor: 'pointer' }}>Masuk / Daftar Akun</span>
+          <span style={{ cursor: 'pointer' }} onClick={handleAuthClick}>
+            Masuk / Daftar Akun
+          </span>
         </div>
 
         <div className="content-area">
@@ -84,9 +97,9 @@ function App() {
               </select>
             </div>
             
-            {/* TOMBOL BARU ALA GARRY AUDIE */}
+            {/* TOMBOL DENGAN FUNGSI KLIK */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '5px' }}>
-              <button className="btn-action">
+              <button className="btn-action" onClick={handleStartChat}>
                 Mulai Obrolan Baru
                 <span className="arrow-icon">→</span>
               </button>
