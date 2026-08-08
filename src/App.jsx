@@ -1,4 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
+
+// Hubungkan ke server backend (otomatis mendeteksi domain Render atau localhost)
+const socket = io();
 
 // IKON MENU UTAMA
 const LogoIcon = () => (
@@ -43,16 +47,49 @@ const LinkedInIcon = () => (
 function App() {
   const [myGender, setMyGender] = useState('male');
   const [lookingFor, setLookingFor] = useState('anyone');
+  const [statusText, setStatusText] = useState('Siap mencari obrolan...');
+  const [isSearching, setIsSearching] = useState(false);
 
-  // Fungsi saat tombol "Mulai Obrolan Baru" diklik
+  // Tangkap sinyal Socket.io dari server
+  useEffect(() => {
+    socket.on("waiting_for_partner", () => {
+      setStatusText("Mencari pasangan obrolan... Mohon tunggu sebentar.");
+    });
+
+    socket.on("match_found", (data) => {
+      setStatusText(`🎉 Berhasil tersambung dengan partner! Ruang: ${data.room}`);
+      setIsSearching(false);
+    });
+
+    return () => {
+      socket.off("waiting_for_partner");
+      socket.off("match_found");
+    };
+  }, []);
+
+  // Fungsi ketika tombol "Mulai Obrolan Baru" diklik
   const handleStartChat = () => {
-    alert(`Memulai pencarian... Preferensi: ${myGender} mencari ${lookingFor}`);
-    // Di sini nanti bisa diarahkan ke fungsi pencarian atau halaman chat
+    setIsSearching(true);
+    setStatusText("Menghubungkan ke server...");
+    // Kirim sinyal ke backend server.ts untuk masuk antrean match
+    socket.emit("join_queue", { myGender, lookingFor });
   };
 
-  // Fungsi saat tombol "Masuk / Daftar Akun" diklik
   const handleAuthClick = () => {
-    alert('Fitur Masuk / Daftar Akun akan segera dibuka!');
+    const username = prompt("Masukkan Username:");
+    const password = prompt("Masukkan Password:");
+    if (username && password) {
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || data.error);
+      })
+      .catch(err => alert("Gagal terhubung ke server pendaftaran."));
+    }
   };
 
   return (
@@ -74,7 +111,7 @@ function App() {
 
       <main className="main-wrapper">
         <div className="header-top">
-          <span style={{ cursor: 'pointer' }} onClick={handleAuthClick}>
+          <span style={{ cursor: 'pointer', fontWeight: 'bold', color: '#E63946' }} onClick={handleAuthClick}>
             Masuk / Daftar Akun
           </span>
         </div>
@@ -97,10 +134,13 @@ function App() {
               </select>
             </div>
             
-            {/* TOMBOL DENGAN FUNGSI KLIK */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '5px' }}>
-              <button className="btn-action" onClick={handleStartChat}>
-                Mulai Obrolan Baru
+            <div style={{ marginTop: '15px', color: '#E63946', fontWeight: '500', fontSize: '15px' }}>
+              {statusText}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '15px' }}>
+              <button className="btn-action" onClick={handleStartChat} disabled={isSearching}>
+                {isSearching ? 'Sedang Mencari...' : 'Mulai Obrolan Baru'}
                 <span className="arrow-icon">→</span>
               </button>
             </div>
